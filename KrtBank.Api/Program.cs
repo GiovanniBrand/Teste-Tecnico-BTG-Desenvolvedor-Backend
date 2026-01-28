@@ -1,6 +1,8 @@
 using KrtBank.Api.Configurations;
+using KrtBank.Api.Middlewares;
 using KrtBank.Application;
 using KrtBank.Infrastructure;
+using Microsoft.AspNetCore.Mvc;
 using Serilog;
 using System.Diagnostics;
 
@@ -8,6 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 SerilogConfig.AddSerilog(builder);
 var sw = Stopwatch.StartNew();
+
 
 try
 {
@@ -23,8 +26,14 @@ try
 
     builder.Services.AddJwtConfiguration(builder.Configuration);
     builder.Services.AddSwaggerConfiguration();
+    builder.Services.Configure<ApiBehaviorOptions>(options =>
+    {
+        options.SuppressModelStateInvalidFilter = true;
+    });
 
     var app = builder.Build();
+    app.UseMiddleware<GlobalExceptionMiddleware>();
+
 
     // Pipeline de Execução
     if (app.Environment.IsDevelopment())
