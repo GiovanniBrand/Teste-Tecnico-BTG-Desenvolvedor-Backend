@@ -3,6 +3,14 @@
 [Oo]bj/
 out/
 
+# Ignora a pasta de logs que o Serilog cria sozinho
+Logs/
+*.log
+
+# Ignora chaves de proteção de dados (caso sejam geradas no projeto)
+.aspnet/DataProtection-Keys/
+App_Data/
+
 ## [ .NET Core / .NET ]
 # Arquivos gerados pelo compilador
 *.deps.json
