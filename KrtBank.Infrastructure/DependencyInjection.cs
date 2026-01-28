@@ -1,4 +1,6 @@
-﻿using KrtBank.Infrastructure.Context;
+﻿using KrtBank.Domain.Repositories;
+using KrtBank.Infrastructure.Context;
+using KrtBank.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,10 +17,11 @@ public static class DependencyInjection
             options.InstanceName = "KrtBank";
         });
 
-        services.AddDbContext<AppDbContext>(options =>
+        services.AddDbContext<KrtBankDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"),
-                b => b.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)));
+                b => b.MigrationsAssembly(typeof(KrtBankDbContext).Assembly.FullName)));
 
+        services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
         return services;
     }
