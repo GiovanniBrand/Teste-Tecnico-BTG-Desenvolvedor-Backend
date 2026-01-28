@@ -2,6 +2,7 @@ using KrtBank.Api.Configurations;
 using KrtBank.Api.Middlewares;
 using KrtBank.Application;
 using KrtBank.Infrastructure;
+using KrtBank.Infrastructure.Configurations;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
 using System.Diagnostics;
@@ -32,15 +33,13 @@ try
     });
 
     var app = builder.Build();
+    await DbSeeder.SeedUserAsync(app.Services);
     app.UseMiddleware<GlobalExceptionMiddleware>();
 
 
     // Pipeline de Execução
-    if (app.Environment.IsDevelopment())
-    {
-        app.UseSwaggerConfiguration();
-        app.UseDeveloperExceptionPage();
-    }
+    app.UseSwaggerConfiguration();
+    app.UseDeveloperExceptionPage();
 
     app.UseSerilogRequestLogging();
     app.UseHttpsRedirection();

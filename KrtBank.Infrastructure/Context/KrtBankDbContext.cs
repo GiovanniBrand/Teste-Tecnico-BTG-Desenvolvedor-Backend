@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using KrtBank.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace KrtBank.Infrastructure.Context;
 
@@ -7,7 +8,7 @@ public class KrtBankDbContext : DbContext
     public KrtBankDbContext(DbContextOptions<KrtBankDbContext> options) : base(options)
     {
     }
-
+    public DbSet<User> Users { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
