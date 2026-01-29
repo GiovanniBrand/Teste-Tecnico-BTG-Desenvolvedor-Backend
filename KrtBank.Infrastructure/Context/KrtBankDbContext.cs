@@ -9,6 +9,7 @@ public class KrtBankDbContext : DbContext
     {
     }
     public DbSet<User> Users { get; set; }
+    public DbSet<Account> Accounts { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

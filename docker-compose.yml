@@ -7,9 +7,22 @@ services:
       - MSSQL_SA_PASSWORD=SuaSenhaForte@2026
     ports:
       - "1433:1433"
+    volumes:
+      - sql_data:/var/opt/mssql # Garante que as contas criadas não sumam
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'SuaSenhaForte@2026' -Q 'SELECT 1' -C"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:latest
     container_name: krtbank-cache
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/data # Mantém o cache persistente se necessário
+
+volumes:
+  sql_data:
+  redis_data:

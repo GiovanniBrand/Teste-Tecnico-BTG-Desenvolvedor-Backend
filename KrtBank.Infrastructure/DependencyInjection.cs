@@ -1,7 +1,9 @@
-﻿using KrtBank.Domain.Interfaces;
+﻿using KrtBank.Application.Interfaces;
+using KrtBank.Domain.Interfaces;
 using KrtBank.Domain.Repositories;
 using KrtBank.Infrastructure.Configurations;
 using KrtBank.Infrastructure.Context;
+using KrtBank.Infrastructure.Messaging;
 using KrtBank.Infrastructure.Repositories;
 using KrtBank.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
@@ -25,26 +27,13 @@ public static class DependencyInjection
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"),
                 b => b.MigrationsAssembly(typeof(KrtBankDbContext).Assembly.FullName)));
 
+        services.AddScoped<IRedisCacheService, RedisCacheService>();
+        services.AddScoped<IPasswordService, PasswordService>();
+        services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddSingleton<IMessageBus, MockMessageBus>();
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-        AddServices(services);
 
         return services;
-    }
-
-    private static void AddServices(IServiceCollection services)
-    {
-        var assembly = Assembly.GetExecutingAssembly();
-        var serviceTypes = assembly.GetTypes()
-            .Where(t => t.IsClass && !t.IsAbstract && t.Namespace != null && t.Namespace.Contains("Services"));
-
-        foreach (var type in serviceTypes)
-        {
-            var interfaceType = type.GetInterface($"I{type.Name}");
-
-            if (interfaceType != null)
-            {
-                services.AddScoped(interfaceType, type);
-            }
-        }
     }
 }

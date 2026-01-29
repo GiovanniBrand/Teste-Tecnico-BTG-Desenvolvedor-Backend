@@ -3,15 +3,10 @@ using KrtBank.Domain.Exceptions;
 using KrtBank.Domain.Interfaces;
 using KrtBank.Domain.Repositories;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace KrtBank.Application.Commands.Login
 {
-    internal class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResponse>
+    public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResponse>
     {
         private readonly IRepository<User> _userRepository;
         private readonly IPasswordService _passwordService;
