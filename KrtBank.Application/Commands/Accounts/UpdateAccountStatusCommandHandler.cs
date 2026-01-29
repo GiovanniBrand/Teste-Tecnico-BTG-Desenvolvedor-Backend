@@ -1,47 +1,55 @@
-﻿using KrtBank.Domain.Entities;
+﻿using KrtBank.Application.Events;
+using KrtBank.Domain.Entities;
 using KrtBank.Domain.Exceptions;
 using KrtBank.Domain.Interfaces;
 using KrtBank.Domain.Repositories;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace KrtBank.Application.Commands.Accounts
+namespace KrtBank.Application.Commands.Accounts;
+
+public class UpdateAccountStatusCommandHandler : IRequestHandler<UpdateAccountStatusCommand, bool>
 {
-    public class UpdateAccountStatusCommandHandler : IRequestHandler<UpdateAccountStatusCommand, bool>
+    private readonly IRepository<Account> _repository;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IMediator _mediator;
+    private readonly IRedisCacheService _cache;
+
+    public UpdateAccountStatusCommandHandler(IRepository<Account> repository, IUnitOfWork unitOfWork, IMediator mediator,IRedisCacheService cache)
     {
-        private readonly IRepository<Account> _repository;
-        private readonly IRedisCacheService _cache;
+        _repository = repository;
+        _unitOfWork = unitOfWork;
+        _mediator = mediator;
+        _cache = cache;
+    }
 
-        public UpdateAccountStatusCommandHandler(IRepository<Account> repository, IRedisCacheService cache)
-        {
-            _repository = repository;
-            _cache = cache;
-        }
+    public async Task<bool> Handle(UpdateAccountStatusCommand request, CancellationToken ct)
+    {
+        await _unitOfWork.BeginTransactionAsync(ct);
 
-        public async Task<bool> Handle(UpdateAccountStatusCommand request, CancellationToken ct)
+        try
         {
-            // não usamos o cache aqui para garantir o dado mais atual
+            // Busca o dado mais atual no banco (ignora cache para escrita)
             var account = await _repository.GetFirstAsync(a => a.Cpf == request.Cpf, ct);
 
-            if (account == null)  
+            if (account == null)
                 throw new NotFoundException("Conta não encontrada.");
 
             account.UpdateStatus(request.Status);
-
             _repository.Update(account);
 
-            var rowsAffected = await _repository.SaveChangesAsync(ct);
+            await _unitOfWork.SaveChangesAsync(ct);
+            await _mediator.Publish(new AccountUpdatedEvent(account), ct);
 
-            if (rowsAffected > 0)
-            {
-                await _cache.RemoveAsync($"account:{request.Cpf}");
-            }
+            await _unitOfWork.CommitAsync(ct);
 
-            return rowsAffected > 0;
+            await _cache.RemoveAsync($"account:{request.Cpf}");
+
+            return true;
+        }
+        catch (Exception)
+        {
+            await _unitOfWork.RollbackAsync(ct);
+            throw;
         }
     }
 }

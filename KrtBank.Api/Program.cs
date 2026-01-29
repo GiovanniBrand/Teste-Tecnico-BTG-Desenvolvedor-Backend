@@ -36,6 +36,7 @@ try
     await DbSeeder.SeedUserAsync(app.Services);
     await DbSeeder.SeedAccountsAsync(app.Services);
     app.UseMiddleware<GlobalExceptionMiddleware>();
+    app.UseMiddleware<PerformanceLogMiddleware>();
 
 
     // Pipeline de Execução

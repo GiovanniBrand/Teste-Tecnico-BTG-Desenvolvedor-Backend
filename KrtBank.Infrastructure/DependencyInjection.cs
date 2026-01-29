@@ -1,7 +1,9 @@
-﻿using KrtBank.Domain.Interfaces;
+﻿using KrtBank.Application.Interfaces;
+using KrtBank.Domain.Interfaces;
 using KrtBank.Domain.Repositories;
 using KrtBank.Infrastructure.Configurations;
 using KrtBank.Infrastructure.Context;
+using KrtBank.Infrastructure.Messaging;
 using KrtBank.Infrastructure.Repositories;
 using KrtBank.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
@@ -28,6 +30,8 @@ public static class DependencyInjection
         services.AddScoped<IRedisCacheService, RedisCacheService>();
         services.AddScoped<IPasswordService, PasswordService>();
         services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddSingleton<IMessageBus, MockMessageBus>();
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
         return services;

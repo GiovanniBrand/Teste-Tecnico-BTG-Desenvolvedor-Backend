@@ -1,12 +1,13 @@
 ﻿using KrtBank.Api.Wrappers;
 using KrtBank.Application.Commands.Accounts;
-using KrtBank.Application.Commands.Login;
 using KrtBank.Application.Queries.Accounts;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KrtBank.Api.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/v1/account")]
     public class AccountController : ControllerBase
