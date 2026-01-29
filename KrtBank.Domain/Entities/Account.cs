@@ -12,14 +12,14 @@ namespace KrtBank.Domain.Entities
         // Construtor vazio para o Entity Framework
         protected Account() { }
 
-        public Account(string accountHolderName, string cpf)
+        public Account(string accountHolderName, string cpf, AccountStatus status = AccountStatus.Active)
         {
             if (string.IsNullOrWhiteSpace(accountHolderName)) throw new ArgumentException("Nome do titular é obrigatório.");
             if (string.IsNullOrWhiteSpace(cpf)) throw new ArgumentException("CPF é obrigatório.");
 
             AccountHolderName = accountHolderName;
             Cpf = cpf;
-            AccountStatus = AccountStatus.Active;
+            AccountStatus = status;
         }
 
         public void UpdateStatus(AccountStatus newStatus)

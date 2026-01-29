@@ -25,26 +25,11 @@ public static class DependencyInjection
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"),
                 b => b.MigrationsAssembly(typeof(KrtBankDbContext).Assembly.FullName)));
 
+        services.AddScoped<IRedisCacheService, RedisCacheService>();
+        services.AddScoped<IPasswordService, PasswordService>();
+        services.AddScoped<ITokenService, TokenService>();
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-        AddServices(services);
 
         return services;
-    }
-
-    private static void AddServices(IServiceCollection services)
-    {
-        var assembly = Assembly.GetExecutingAssembly();
-        var serviceTypes = assembly.GetTypes()
-            .Where(t => t.IsClass && !t.IsAbstract && t.Namespace != null && t.Namespace.Contains("Services"));
-
-        foreach (var type in serviceTypes)
-        {
-            var interfaceType = type.GetInterface($"I{type.Name}");
-
-            if (interfaceType != null)
-            {
-                services.AddScoped(interfaceType, type);
-            }
-        }
     }
 }

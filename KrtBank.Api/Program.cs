@@ -34,6 +34,7 @@ try
 
     var app = builder.Build();
     await DbSeeder.SeedUserAsync(app.Services);
+    await DbSeeder.SeedAccountsAsync(app.Services);
     app.UseMiddleware<GlobalExceptionMiddleware>();
 
 
