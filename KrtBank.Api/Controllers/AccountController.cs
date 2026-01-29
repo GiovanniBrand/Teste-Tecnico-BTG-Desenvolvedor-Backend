@@ -44,5 +44,13 @@ namespace KrtBank.Api.Controllers
             await _mediator.Send(command);
             return Ok(ApiResponse<bool>.Create(true, "Status da conta atualizado com sucesso."));
         }
+
+        [HttpDelete("{cpf}")]
+        [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> Delete([FromRoute] string cpf)
+        {
+            await _mediator.Send(new DeleteAccountCommand(cpf));
+            return Ok(ApiResponse<bool>.Create(true, "Conta deletada com sucesso."));
+        }
     }
 }
