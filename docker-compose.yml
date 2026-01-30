@@ -1,0 +1,44 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: src/KrtBank.Api/Dockerfile
+    container_name: krtbank-api
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=KrtBankDb;User Id=sa;Password=SuaSenhaForte@2026;TrustServerCertificate=True;
+      - ConnectionStrings__RedisConnection=redis:6379,password=,abortConnect=false
+    ports:
+      - "8080:8080"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: krtbank-sql
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=SuaSenhaForte@2026
+    ports:
+      - "1433:1433"
+    volumes:
+      - sql_data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'SuaSenhaForte@2026' -Q 'SELECT 1' -C"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:latest
+    container_name: krtbank-cache
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  sql_data:
+  redis_data:
