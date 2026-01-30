@@ -50,7 +50,7 @@ namespace KrtBank.Application.Commands.Accounts
                     account.AccountStatus.ToString()
                 );
 
-                await _cache.SetAsync($"account:{account.Cpf}", response, TimeSpan.FromHours(24));
+                await _cache.SetAsync($"account:{request.Cpf}", response, TimeSpan.FromHours(24));
 
                 return response;
             }

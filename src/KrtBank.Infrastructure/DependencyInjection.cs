@@ -25,7 +25,11 @@ public static class DependencyInjection
 
         services.AddDbContext<KrtBankDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"),
-                b => b.MigrationsAssembly(typeof(KrtBankDbContext).Assembly.FullName)));
+                b => 
+                {
+                    b.MigrationsAssembly(typeof(KrtBankDbContext).Assembly.FullName);
+                    b.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null);
+                }));
 
         services.AddScoped<IRedisCacheService, RedisCacheService>();
         services.AddScoped<IPasswordService, PasswordService>();

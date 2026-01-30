@@ -65,16 +65,23 @@ O projeto segue separação por camadas:
 - **.NET 8 SDK** instalado e no PATH (`dotnet`)
 - (Opcional) **EF CLI** (`dotnet-ef`) para aplicar migrations
 
-### 1) Subir infraestrutura (SQL Server + Redis)
+### 1) Subir a aplicação completa (API + Banco + Redis)
 
-Na raiz do projeto:
+1. Abra o terminal.
+2. Navegue até a pasta raiz do projeto (onde está o arquivo `docker-compose.yml`):
+   ```bash
+   cd c:\Projetos\Teste_BTG
+   ```
+   *(Ajuste o caminho conforme onde você clonou o projeto)*
 
-```bash
-docker-compose up -d
-```
+3. Execute o comando para compilar e subir os containers:
+   ```bash
+   docker-compose up -d --build
+   ```
 
 Serviços padrão:
 
+- **API rodando no docker**: `localhost:8080` / `localhost:8081`
 - **SQL Server**: `localhost:1433` (usuário `sa`)
 - **Redis**: `localhost:6379`
 
@@ -335,3 +342,13 @@ Esta seção descreve as escolhas técnicas fundamentais deste projeto, justific
 - **Mock de Serviços de Comunicação (Exceção Didática)**:
   - **Decisão**: Uso de logs no console ou arquivos locais para simular o envio mensageria para outros serviços.
   - **Por que**: Isso permite testar o fluxo de negócio completo apenas observando a saída do terminal, mantendo o foco na lógica do código e não na integração com outros serviços, no exemplo integração com cartão de credito ou serviço de proteção de fraude.
+
+- **Resiliência e Falhas Transitórias**:
+  - **Decisão**: Habilitação do `EnableRetryOnFailure` no Entity Framework Core e configuração de retry no driver do Redis.
+  - **Por que**: Em ambientes distribuídos e containerizados, falhas de rede momentâneas são comuns. O mecanismo de retry evita que a aplicação falhe imediatamente por erros passageiros, aumentando a disponibilidade e robustez do sistema, crucial para um ambiente financeiro.
+
+- **Deploy com Docker Multi-stage**:
+  - **Decisão**: Implementação de um `Dockerfile` em múltiplos estágios (Build e Runtime) e orquestração via Docker Compose.
+  - **Por que**: 
+    - **Segurança e Tamanho**: A imagem final de produção contém apenas o runtime do .NET, sem SDKs ou código fonte, reduzindo a superfície de ataque e o tamanho do container.
+    - **Facilidade de Deploy**: O `docker-compose` agora sobe a aplicação completa (API + Banco + Cache) com um único comando, garantindo um ambiente de execução idêntico ao de produção/homologação.
