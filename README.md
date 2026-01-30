@@ -15,6 +15,7 @@ API de Gerenciamento de Contas (Onboarding) desenvolvida em **.NET 8**, aplicand
 - [Eventos e mensageria (mock)](#eventos-e-mensageria-mock)
 - [Health check e logs](#health-check-e-logs)
 - [Testes](#testes)
+- [Pontos de Decisão Arquitetural](#pontos-de-decisão-arquitetural)
 
 ## Requisitos do desafio (da especificação)
 
@@ -293,3 +294,44 @@ Na raiz da solução:
 ```bash
 dotnet test
 ```
+
+## Pontos de Decisão Arquitetural
+
+Esta seção descreve as escolhas técnicas fundamentais deste projeto, justificando o "porquê" de cada abordagem para garantir a manutenibilidade e escalabilidade do sistema.
+
+- **CQRS com MediatR**:
+  - **Decisão**: Separação física e lógica de operações de leitura (Queries) e escrita (Commands).
+  - **Por que:** Evita o crescimento desordenado de classes de serviço. Com MediatR, cada caso de uso tem seu próprio Handler, respeitando o Princípio de Responsabilidade Única (SRP) e facilitando a implementação de Cross-cutting concerns (como logs e validações) via IPipelineBehavior.
+
+- **Result Pattern vs. Exceptions**:
+  - **Decisão**: Utilização de um objeto de retorno Result<T> em vez de lançar exceções para fluxo de negócio.
+  - **Por que** Exceções devem ser reservadas para situações excepcionais (ex: falha de conexão). O uso de exceções para controle de fluxo (ex: "Usuário não encontrado") prejudica a performance e torna o código menos previsível. O Result Pattern torna os estados de erro explícitos na assinatura do método.
+
+- **Segurança: JWT & OAuth2**:
+  - **Decisão**: Autenticação stateless com tokens JWT e autorização baseada em Roles.
+  - **Por que**: Permite a escalabilidade horizontal da API (não depende de estado em memória) e segue os padrões modernos de identidade de mercado, facilitando a integração com provedores externos (Azure AD, Auth0). E por se tratar de conexão ao banco, é providencial que tenha uma autenticação garantida para a liberação das API.
+  
+- **Observabilidade**:
+  - **Decisão**: Implementação de Health Checks e Serilog (Structured Logging).
+  - **Por que** Em ambientes distribuídos (Azure/AWS), é preciso logs estruturados para realizar buscas complexas e telemetria para identificar gargalos de performance em tempo real.
+
+- **Dados Sensiveis no `appsettings.json` (Exceção Didática)**:
+  - **Decisão**: Deixar a chave do JWT e ConnectionString abertas no appsettings.json.
+  - **Por que**: Em ambientes de produção, estes dados ficam configurados neste mesmo local. Em desenvolvimento é comum ConnectionString e chave do JWT ficarem no User Secrets para não vazar esses dados. Porém como se trata de uma aplicação para teste e os dados não são sensiveis pois foram gerados, a opção por deixar no `appsettings.json` é apenas para visualização da montagem e configuração do aplicativo.
+
+- **Cache Distribuído com Redis**:
+  - **Decisão**: Implementação de IDistributedCache utilizando Redis para armazenamento de dados de alta frequência (ex: catálogos, sessões, resultados de queries pesadas).
+  - **Por que**:
+    - **Performance**: Reduz a latência da aplicação ao evitar idas desnecessárias ao banco de dados.
+    - **Escalabilidade**: Em um ambiente com múltiplas instâncias da API, o cache em memória local falha pois as instâncias não compartilham dados. O Redis centraliza esse estado.
+    - **Ponto de Atenção**: Foi utilizado o padrão de cache onde a aplicação tenta ler do cache; se não encontrar, busca no banco e popula o cache para a próxima requisição.
+
+- **Migrations e Seed Data no Startup (Exceção Didática)**:
+  - **Decisão**: Execução automática de context.Database.Migrate() e inserção de dados iniciais diretamente no Program.cs ao iniciar a aplicação.
+  - **Por que**:
+    - **Praticidade**: Assim como os dados no `appsettings.json`, esta escolha visa praticidade no teste onde o desenvolvedor não precisa inserir dados teste manualmente pois os mesmos são inseridos automaticamente.
+    - **Ressalva de Produção**: Em ambientes de produção e homologação, não se deve executar migrações no startup, isso exige que o usuário da aplicação tenha permissões de Owner no banco, o que viola princípios de segurança. O correto é rodar as migrations via scripts no Pipeline de CD (Continuous Deployment).
+
+- **Mock de Serviços de Comunicação (Exceção Didática)**:
+  - **Decisão**: Uso de logs no console ou arquivos locais para simular o envio mensageria para outros serviços.
+  - **Por que**: Isso permite testar o fluxo de negócio completo apenas observando a saída do terminal, mantendo o foco na lógica do código e não na integração com outros serviços, no exemplo integração com cartão de credito ou serviço de proteção de fraude.
