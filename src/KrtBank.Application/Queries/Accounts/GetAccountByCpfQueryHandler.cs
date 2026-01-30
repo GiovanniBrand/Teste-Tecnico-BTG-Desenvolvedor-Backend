@@ -21,10 +21,10 @@ namespace KrtBank.Application.Queries.Accounts
         public async Task<AccountResponse> Handle(GetAccountByCpfQuery request, CancellationToken ct)
         {
             var cacheKey = $"account:{request.Cpf}";
-            var cachedAccount = await _cache.GetAsync<AccountResponse>(cacheKey);
+            var cachedResponse = await _cache.GetAsync<AccountResponse>(cacheKey);
 
-            if (cachedAccount != null)
-                return cachedAccount;
+            if (cachedResponse != null)
+                return cachedResponse;
 
             var account = await _repository.GetFirstAsync(a => a.Cpf == request.Cpf, ct);
 
