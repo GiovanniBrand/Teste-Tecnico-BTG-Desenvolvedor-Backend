@@ -301,7 +301,7 @@ Esta seção descreve as escolhas técnicas fundamentais deste projeto, justific
 
 - **CQRS com MediatR**:
   - **Decisão**: Separação física e lógica de operações de leitura (Queries) e escrita (Commands).
-  - **Por que:** Evita o crescimento desordenado de classes de serviço. Com MediatR, cada caso de uso tem seu próprio Handler, respeitando o Princípio de Responsabilidade Única (SRP) e facilitando a implementação de Cross-cutting concerns (como logs e validações) via IPipelineBehavior.
+  - **Por que:** Evita o crescimento desordenado de classes de serviço. Com MediatR, cada caso de uso tem seu próprio Handler, respeitando o Princípio de Responsabilidade Única e facilitando a implementação de logs e validações via IPipelineBehavior.
 
 - **Result Pattern vs. Exceptions**:
   - **Decisão**: Utilização de um objeto de retorno Result<T> em vez de lançar exceções para fluxo de negócio.
@@ -309,15 +309,15 @@ Esta seção descreve as escolhas técnicas fundamentais deste projeto, justific
 
 - **Segurança: JWT & OAuth2**:
   - **Decisão**: Autenticação stateless com tokens JWT e autorização baseada em Roles.
-  - **Por que**: Permite a escalabilidade horizontal da API (não depende de estado em memória) e segue os padrões modernos de identidade de mercado, facilitando a integração com provedores externos (Azure AD, Auth0). E por se tratar de conexão ao banco, é providencial que tenha uma autenticação garantida para a liberação das API.
+  - **Por que**: Permite a escalabilidade horizontal da API onde não depende de estado em memória e segue os padrões modernos de identidade de mercado, facilitando a integração com provedores externos. E por se tratar de conexão ao banco, é providencial que tenha uma autenticação garantida para a liberação das API.
   
 - **Observabilidade**:
-  - **Decisão**: Implementação de Health Checks e Serilog (Structured Logging).
-  - **Por que** Em ambientes distribuídos (Azure/AWS), é preciso logs estruturados para realizar buscas complexas e telemetria para identificar gargalos de performance em tempo real.
+  - **Decisão**: Implementação de Health Checks e Serilog.
+  - **Por que** Em ambientes de cloud, é preciso logs estruturados para realizar buscas complexas e telemetria para identificar gargalos de performance em tempo real.
 
 - **Dados Sensiveis no `appsettings.json` (Exceção Didática)**:
   - **Decisão**: Deixar a chave do JWT e ConnectionString abertas no appsettings.json.
-  - **Por que**: Em ambientes de produção, estes dados ficam configurados neste mesmo local. Em desenvolvimento é comum ConnectionString e chave do JWT ficarem no User Secrets para não vazar esses dados. Porém como se trata de uma aplicação para teste e os dados não são sensiveis pois foram gerados, a opção por deixar no `appsettings.json` é apenas para visualização da montagem e configuração do aplicativo.
+  - **Por que**: Em ambientes de produção, estes dados ficam configurados neste mesmo local. Em desenvolvimento é comum ConnectionString e chave do JWT ficarem no User Secrets para não vazar esses dados. Porém como se trata de uma aplicação para teste e os dados foram gerados, a opção por deixar no `appsettings.json` é apenas para visualização da montagem e configuração do aplicativo.
 
 - **Cache Distribuído com Redis**:
   - **Decisão**: Implementação de IDistributedCache utilizando Redis para armazenamento de dados de alta frequência (ex: catálogos, sessões, resultados de queries pesadas).
