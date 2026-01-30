@@ -4,4 +4,5 @@
     Task CommitAsync(CancellationToken ct = default);
     Task RollbackAsync(CancellationToken ct = default);
     Task<int> SaveChangesAsync(CancellationToken ct = default);
+    bool HasChanges();
 }

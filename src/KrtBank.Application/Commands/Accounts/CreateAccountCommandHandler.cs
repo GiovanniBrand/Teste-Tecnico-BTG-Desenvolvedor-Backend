@@ -31,7 +31,8 @@ namespace KrtBank.Application.Commands.Accounts
             {
                 // Regra de Negócio: CPF Único
                 var exists = await _repository.ExistsAsync(a => a.Cpf == request.Cpf, ct);
-                if (exists) throw new BusinessException("Já existe uma conta com este CPF.");
+                if (exists) 
+                    throw new BusinessException("Já existe uma conta com este CPF.");
 
                 var account = new Account(request.Name, request.Cpf);
 
@@ -55,7 +56,8 @@ namespace KrtBank.Application.Commands.Accounts
             }
             catch (Exception)
             {
-                await _unitOfWork.RollbackAsync(ct);
+                if (_unitOfWork.HasChanges())
+                    await _unitOfWork.RollbackAsync(ct);
                 throw;
             }
         }

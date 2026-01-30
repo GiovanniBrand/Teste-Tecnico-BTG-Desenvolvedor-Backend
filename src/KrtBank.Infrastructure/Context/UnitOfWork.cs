@@ -10,4 +10,9 @@ public class UnitOfWork : IUnitOfWork
     public Task CommitAsync(CancellationToken ct) => _context.Database.CurrentTransaction.CommitAsync(ct);
     public Task RollbackAsync(CancellationToken ct) => _context.Database.CurrentTransaction.RollbackAsync(ct);
     public Task<int> SaveChangesAsync(CancellationToken ct) => _context.SaveChangesAsync(ct);
+    public bool HasChanges()
+    {
+        return _context.ChangeTracker.HasChanges();
+    }
+
 }
